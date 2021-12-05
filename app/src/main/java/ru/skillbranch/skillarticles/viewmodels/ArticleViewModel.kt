@@ -77,18 +77,13 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
     }
 
     override fun handleBookmark() {
-        val toggleBookmark = {
+
             val info = currentState.toArticlePersonalInfo()
             repository.updateArticlePersonalInfo(info.copy(isBookmark = !info.isBookmark))
-        }
-
-        toggleBookmark()
 
         val msg = if(currentState.isBookmark) Notify.TextMessage("Add to bookmarks")
-        else Notify.ActionMessage(
+        else Notify.TextMessage(
             "Remove from bookmarks",
-            actionLabel = "Вернуть",
-            toggleBookmark
         )
         notify(msg)
     }
