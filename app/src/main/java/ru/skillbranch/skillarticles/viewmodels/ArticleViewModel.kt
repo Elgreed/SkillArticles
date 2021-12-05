@@ -122,11 +122,11 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
     }
 
     override fun handleSearchMode(isSearch: Boolean) {
-        TODO("Not yet implemented")
+
     }
 
     override fun handleSearch(query: String?) {
-        TODO("Not yet implemented")
+
     }
 
 }
