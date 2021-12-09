@@ -1,6 +1,5 @@
 package ru.skillbranch.skillarticles.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.ArticleData
 import ru.skillbranch.skillarticles.data.ArticlePersonalInfo
@@ -12,6 +11,7 @@ import ru.skillbranch.skillarticles.extensions.format
 class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleState>(ArticleState()), IArticleViewModel {
 
     private val repository = ArticleRepository
+    private var menuIsShown: Boolean = false
 
     init {
         subscribeOnDataSource(getArticleData()) { article, state ->
@@ -22,8 +22,7 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
                 category = article.category,
                 categoryIcon = article.categoryIcon,
                 date = article.date.format(),
-                author = article.author,
-                poster = article.poster
+                author = article.author
             )
         }
 
@@ -77,32 +76,27 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
     }
 
     override fun handleBookmark() {
-        val toggleBookmark = {
+
             val info = currentState.toArticlePersonalInfo()
             repository.updateArticlePersonalInfo(info.copy(isBookmark = !info.isBookmark))
-        }
-
-        toggleBookmark()
 
         val msg = if(currentState.isBookmark) Notify.TextMessage("Add to bookmarks")
-        else Notify.ActionMessage(
+        else Notify.TextMessage(
             "Remove from bookmarks",
-            actionLabel = "Вернуть",
-            toggleBookmark
         )
         notify(msg)
     }
 
     override fun handleLike() {
+        val isLiked = currentState.isLike
         val toggleLike = {
             val info = currentState.toArticlePersonalInfo()
             repository.updateArticlePersonalInfo(info.copy(isLike = !info.isLike))
         }
-        Log.d("HandleLike", "${currentState.isLike}")
         
         toggleLike()
 
-        val msg = if(currentState.isLike) Notify.TextMessage("Mark is liked")
+        val msg = if(!isLiked) Notify.TextMessage("Mark is liked")
         else Notify.ActionMessage(
             "Don`t like it anymore",
             actionLabel = "No, still like it",
@@ -118,15 +112,21 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
     }
 
     override fun handleToggleMenu() {
-        updateState { it.copy(isShowMenu = !it.isShowMenu) }
+        updateState {  state ->
+            state.copy(isShowMenu = !state.isShowMenu).also { menuIsShown = !state.isShowMenu }
+        }
     }
 
     override fun handleSearchMode(isSearch: Boolean) {
-        TODO("Not yet implemented")
+        updateState { it.copy(isSearch = isSearch) }
     }
 
     override fun handleSearch(query: String?) {
-        TODO("Not yet implemented")
+        updateState { it.copy(searchQuery = query) }
+    }
+
+    fun showMenu() {
+        updateState { it.copy(isShowMenu = menuIsShown) }
     }
 
 }
