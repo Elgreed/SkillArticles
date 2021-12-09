@@ -81,9 +81,7 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
             repository.updateArticlePersonalInfo(info.copy(isBookmark = !info.isBookmark))
 
         val msg = if(currentState.isBookmark) Notify.TextMessage("Add to bookmarks")
-        else Notify.TextMessage(
-            "Remove from bookmarks",
-        )
+        else Notify.TextMessage(msg = "Remove from bookmarks")
         notify(msg)
     }
 
@@ -97,10 +95,11 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
         toggleLike()
 
         val msg = if(!isLiked) Notify.TextMessage("Mark is liked")
+
         else Notify.ActionMessage(
-            "Don`t like it anymore",
+            msg ="Don`t like it anymore",
             actionLabel = "No, still like it",
-            toggleLike
+            actionHandler = toggleLike
         )
 
         notify(msg)
