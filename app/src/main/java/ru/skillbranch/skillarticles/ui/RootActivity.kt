@@ -33,6 +33,7 @@ class RootActivity : AppCompatActivity() {
         viewModel = ViewModelProviders.of(this, vmFactory).get(ArticleViewModel::class.java)
         viewModel.observeState(this) {
             renderUi(it)
+            setupToolbar()
         }
 
         viewModel.observeNotifications(this) {
@@ -40,17 +41,58 @@ class RootActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupToolbar() {
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        val logo = if(toolbar.childCount > 2) toolbar.getChildAt(2) as ImageView else null
+        logo?.scaleType = ImageView.ScaleType.CENTER_CROP
+        val lp = logo?.layoutParams as? Toolbar.LayoutParams
+        lp?.let {
+            it.width = this.dpToIntPx(40)
+            it.height = this.dpToIntPx(40)
+            it.marginEnd = this.dpToIntPx(16)
+            logo.layoutParams = it
+        }
+    }
+
+    private fun renderUi(data: ArticleState) {
+        btn_settings.isChecked = data.isShowMenu
+        if(data.isShowMenu) submenu.open() else submenu.close()
+
+        btn_like.isChecked = data.isLike
+        btn_bookmark.isChecked = data.isBookmark
+
+        switch_mode.isChecked = data.isDarkMode
+        delegate.localNightMode =
+            if(data.isDarkMode) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+
+        if(data.isBigText) {
+            tv_text_content.textSize = 18f
+            btn_text_up.isChecked = true
+            btn_text_down.isChecked = false
+        } else {
+            tv_text_content.textSize = 14f
+            btn_text_up.isChecked = false
+            btn_text_down.isChecked = true
+        }
+        tv_text_content.text = if(data.isLoadingContent) "loading" else data.content.first() as String
+        toolbar.title = data.title ?: "Skill Articles"
+        toolbar.subtitle = data.category ?: "loading..."
+        if(data.categoryIcon != null) toolbar.logo = getDrawable(data.categoryIcon as Int)
+
+    }
+
     private fun renderNotifications(notify: Notify) {
         val snackBar = Snackbar.make(coordinator_container, notify.message, Snackbar.LENGTH_LONG)
             .setAnchorView(bottombar)
 
         when(notify) {
-            is Notify.TextMessage -> {}
+            is Notify.TextMessage -> { /* nothing */ }
 
             is Notify.ActionMessage -> {
                 snackBar.setActionTextColor(getColor(R.color.color_accent_dark))
                 snackBar.setAction(notify.actionLabel) {
-                    notify.actionHandler.invoke()
+                    notify.actionHandler?.invoke()
                 }
             }
 
@@ -79,44 +121,5 @@ class RootActivity : AppCompatActivity() {
         btn_bookmark.setOnClickListener { viewModel.handleBookmark() }
         btn_share.setOnClickListener { viewModel.handleShare() }
         btn_settings.setOnClickListener { viewModel.handleToggleMenu() }
-    }
-
-    private fun renderUi(data: ArticleState) {
-        btn_settings.isChecked = data.isShowMenu
-        if(data.isShowMenu) submenu.open() else submenu.close()
-
-        btn_like.isChecked = data.isLike
-        btn_bookmark.isChecked = data.isBookmark
-
-        switch_mode.isChecked = data.isDarkMode
-        delegate.localNightMode =
-            if(data.isDarkMode) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
-
-        if(data.isBigText) {
-            tv_text_content.textSize = 18f
-            btn_text_up.isChecked = true
-            btn_text_down.isChecked = false
-        } else {
-            tv_text_content.textSize = 14f
-            btn_text_up.isChecked = false
-            btn_text_down.isChecked = true
-        }
-
-
-
-    }
-
-    private fun setupToolbar() {
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        val logo = if(toolbar.childCount > 2) toolbar.getChildAt(2) as ImageView else null
-        logo?.scaleType = ImageView.ScaleType.CENTER_CROP
-        val lp = logo?.layoutParams as? Toolbar.LayoutParams
-        lp?.let {
-            it.width = this.dpToIntPx(40)
-            it.height = this.dpToIntPx(40)
-            it.marginEnd = this.dpToIntPx(16)
-            logo.layoutParams = it
-        }
     }
 }
