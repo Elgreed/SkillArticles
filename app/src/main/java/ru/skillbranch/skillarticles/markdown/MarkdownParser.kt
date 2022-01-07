@@ -29,39 +29,21 @@ object MarkdownParser {
         return MarkdownText(elements)
     }
 
-    fun clear(string: String?) : String? {
-        if (string.isNullOrEmpty()) return null
-
-        val mdText = parse(string)
-        if (string.isNullOrEmpty()) return null
-        var resultString = ""
-        val textList = mdText.elements.fold(mutableListOf<Element>()){ acc, el -> //spread inner elements
-            acc.also { it.addAll(el.spread()) }
-        }
-            .map { it.text.toString() }
-
-        textList.forEach {
-            resultString += it
-        }
-
-        return resultString
+    fun clear(string: String?): String? {
+        string ?: return null
+        return parse(string).elements.spread().joinToString("") { it.clearContent() }
     }
 
     private fun Element.spread():List<Element>{
         val elements = mutableListOf<Element>()
-        if (this.elements.isEmpty()) {
-            elements.add(this)
-        } else {
-            elements.addAll(this.elements.spread())
-        }
+        if(this.elements.isNotEmpty())elements.addAll(this.elements.spread())
+        else elements.add(this)
         return elements
     }
 
     private fun List<Element>.spread():List<Element>{
         val elements = mutableListOf<Element>()
-        if(this.isNotEmpty()) elements.addAll(
-            this.fold(mutableListOf()){acc, el -> acc.also { it.addAll(el.spread()) }}
-        )
+        forEach { elements.addAll(it.spread()) }
         return elements
     }
 
@@ -275,4 +257,21 @@ sealed class Element() {
         override val text: CharSequence,
         override val elements: List<Element> = emptyList()
     ) : Element()
+}
+
+fun Element.clearContent(): String {
+    return StringBuilder().apply {
+        val element = this@clearContent
+        if(element.elements.isEmpty()) append(element.text)
+        else element.elements.forEach { append(it.clearContent()) }
+    }.toString()
+}
+
+fun MarkdownText.clearContent(): String {
+    return StringBuilder().apply {
+        elements.forEach {
+            if(it.elements.isEmpty()) append(it.text)
+            else it.elements.forEach { el -> append(el.clearContent()) }
+        }
+    }.toString()
 }

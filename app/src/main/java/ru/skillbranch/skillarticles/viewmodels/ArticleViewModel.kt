@@ -12,12 +12,14 @@ import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
 import ru.skillbranch.skillarticles.extensions.asMap
 import ru.skillbranch.skillarticles.extensions.format
 import ru.skillbranch.skillarticles.extensions.indexesOf
+import ru.skillbranch.skillarticles.markdown.MarkdownParser
 
 class ArticleViewModel(private val articleId: String, savedStateHandle: SavedStateHandle) :
     BaseViewModel<ArticleState>(ArticleState(), savedStateHandle), IArticleViewModel {
 
     private val repository = ArticleRepository
     private var menuIsShown: Boolean = false
+    private var clearContent: String? = null
 
     init {
         savedStateHandle.setSavedStateProvider("state") {
@@ -60,7 +62,7 @@ class ArticleViewModel(private val articleId: String, savedStateHandle: SavedSta
         }
     }
 
-    override fun getArticleContent(): LiveData<List<String>?> {
+    override fun getArticleContent(): LiveData<String?> {
         return repository.loadArticleContent(articleId)
     }
 
@@ -132,7 +134,9 @@ class ArticleViewModel(private val articleId: String, savedStateHandle: SavedSta
     override fun handleSearch(query: String?) {
         query ?: return
 
-        val result = currentState.content.firstOrNull().indexesOf(query)
+        if(clearContent == null) clearContent = MarkdownParser.clear(currentState.content)
+
+        val result = clearContent.indexesOf(query)
             .map { it to it + query.length }
 
         Log.d("handleSearch", "$result")
@@ -176,11 +180,11 @@ data class ArticleState(
     val date: String? = null,
     val author: Any? = null,
     val poster: String? = null,
-    val content: List<String> = emptyList(),
+    val content: String = "Loading",
     val reviews: List<Any> = emptyList()
 ) : VMState {
     override fun toBundle(): Bundle {
-        val map = copy(content = emptyList(), isLoadingContent = true)
+        val map = copy(content = "Loading", isLoadingContent = true)
             .asMap()
             .toList()
             .toTypedArray()
@@ -210,7 +214,7 @@ data class ArticleState(
             date = map["date"] as String? ,
             author = map["author"] as Any,
             poster = map["poster"] as String,
-            content = map["content"] as List<String>,
+            content = map["content"] as String,
             reviews = map["reviews"] as List<Any>,
         )
     }
