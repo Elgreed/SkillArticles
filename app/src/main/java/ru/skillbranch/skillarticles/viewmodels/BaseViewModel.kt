@@ -20,9 +20,10 @@ abstract class BaseViewModel<T>(initState: T, private val savedStateHandle: Save
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     val state: MediatorLiveData<T> = MediatorLiveData<T>().apply {
         val restoredState = savedStateHandle.get<Any>("state")?.let {
-            if(it is Bundle) initState.fromBundle(it) as? T
+            if (it is Bundle) initState.fromBundle(it) as? T
             else it as T
         }
+
         value = restoredState ?: initState
     }
 
@@ -63,14 +64,14 @@ abstract class BaseViewModel<T>(initState: T, private val savedStateHandle: Save
     }
 
     /***
-     * вспомогательная функция позволяющая наблюдать за изменениями части стейта ViewModel
+     * вспомогательная функция, позволяющая наблюдать за изменениями части стейта ViewModel
+     * выражение обрабатывающее изменение текущего стостояния
      */
-
-    fun <D> observeSubState(owner: LifecycleOwner, transform: (T) -> D, onChanged: (substate: D) -> Unit) {
+    fun <D> observeSubState(owner: LifecycleOwner, transform:(T) ->  D, onChanged: (subState: D) -> Unit) {
         state
-            .map(transform) // ьрансформируем весь стейт в необходимую модель substate
-            .distinctUntilChanged() // отфтльтровываем и пропускаем дальше только значения которые изменились
-            .observe(owner, Observer(onChanged))
+            .map(transform)
+            .distinctUntilChanged()
+            .observe(owner, Observer { onChanged(it!!) })
     }
 
     /***
@@ -96,21 +97,28 @@ abstract class BaseViewModel<T>(initState: T, private val savedStateHandle: Save
         }
     }
 
-    fun saveState() {
+    fun saveState(){
         savedStateHandle.set("state", currentState)
     }
 
-//    fun restoreState() {
+//    fun restoreState(){
 //        val restoredState = savedStateHandle.get<T>("state")
 //        restoredState ?: return
 //        state.value = restoredState
 //    }
-
 }
 
-class ViewModelFactory(owner: SavedStateRegistryOwner, private val params: String) : AbstractSavedStateViewModelFactory(owner, bundleOf()) {
+public interface VMState:Serializable {
+    fun toBundle() : Bundle
+    fun fromBundle(bundle:Bundle): VMState?
+}
 
-    override fun <T : ViewModel?> create(key: String, modelClass: Class<T>, handle: SavedStateHandle): T {
+class ViewModelFactory(owner: SavedStateRegistryOwner, val params: String) : AbstractSavedStateViewModelFactory(owner, bundleOf()) {
+    override fun <T : ViewModel?> create(
+        key: String,
+        modelClass: Class<T>,
+        handle: SavedStateHandle
+    ): T {
         if (modelClass.isAssignableFrom(ArticleViewModel::class.java)) {
             return ArticleViewModel(params, handle) as T
         }
@@ -156,7 +164,7 @@ sealed class Notify(val message: String) {
     data class ActionMessage(
         val msg: String,
         val actionLabel: String,
-        val actionHandler: (() -> Unit)?
+        val actionHandler: (() -> Unit)
     ) : Notify(msg)
 
     data class ErrorMessage(
@@ -164,9 +172,4 @@ sealed class Notify(val message: String) {
         val errLabel: String?,
         val errHandler: (() -> Unit)?
     ) : Notify(msg)
-}
-
-public interface VMState: Serializable {
-    fun toBundle(): Bundle
-    fun fromBundle(bundle: Bundle): VMState?
 }

@@ -9,10 +9,10 @@ import androidx.viewbinding.ViewBinding
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-class ViewBindingDelegate<T: ViewBinding>(
+class ViewBindingDelegate<T : ViewBinding>(
     private val activity: AppCompatActivity,
     private val initializer: (LayoutInflater) -> T
-    ): ReadOnlyProperty<AppCompatActivity, T>, LifecycleObserver {
+) : ReadOnlyProperty<AppCompatActivity, T>, LifecycleObserver {
     private var _value: T? = null
 
     init {
@@ -21,7 +21,7 @@ class ViewBindingDelegate<T: ViewBinding>(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     fun onCreate() {
-        if(_value == null) {
+        if (_value == null) {
             _value = initializer(activity.layoutInflater)
         }
         activity.setContentView(_value!!.root)
@@ -29,11 +29,12 @@ class ViewBindingDelegate<T: ViewBinding>(
     }
 
     override fun getValue(thisRef: AppCompatActivity, property: KProperty<*>): T {
-        if(_value == null) {
+        if (_value == null) {
             _value = initializer(thisRef.layoutInflater)
         }
         return _value!!
     }
 }
 
-inline fun <reified T: ViewBinding> AppCompatActivity.viewBinding(noinline initializer: (LayoutInflater) -> T) = ViewBindingDelegate(this, initializer)
+inline fun <reified T : ViewBinding> AppCompatActivity.viewBinding(noinline initializer: (LayoutInflater) -> T) =
+    ViewBindingDelegate(this, initializer)
