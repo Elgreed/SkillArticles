@@ -1,30 +1,20 @@
 package ru.skillbranch.skillarticles.extensions
 
+import android.util.Log
 import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.marginBottom
-import androidx.core.view.marginEnd
-import androidx.core.view.marginStart
+import androidx.core.view.marginLeft
+import androidx.core.view.marginRight
 import androidx.core.view.marginTop
 
-fun View.setMarginOptionally(start:Int = this.marginStart,
-                             top:Int = this.marginTop,
-                             end:Int = this.marginEnd,
-                             bottom:Int = this.marginBottom,
-                            ){
-    val lp = this.layoutParams as CoordinatorLayout.LayoutParams
-    lp.marginStart = start
-    lp.topMargin = top
-    lp.marginEnd = end
-    lp.bottomMargin = bottom
-    this.layoutParams = lp
-
+fun View.setMarginOptionally(left : Int = marginLeft, top : Int = marginTop, right : Int = marginRight, bottom : Int = marginBottom) {
+    val coordinatorLayoutParams = layoutParams as CoordinatorLayout.LayoutParams
+    coordinatorLayoutParams.setMargins(left, top, right, bottom)
 }
 
-fun View.setPaddingOptionally(start:Int = this.paddingStart,
-                             top:Int = this.paddingTop,
-                             end:Int = this.paddingEnd,
-                             bottom:Int = this.paddingBottom,
-){
-    this.setPadding(start,top,end,bottom)
+fun View.setPaddingOptionally(left : Int = paddingLeft, top : Int = paddingTop, right : Int = paddingRight, bottom : Int = paddingBottom) {
+    setPadding(left, top, right, bottom)
 }

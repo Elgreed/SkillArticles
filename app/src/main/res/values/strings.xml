@@ -1,8 +1,3 @@
 <resources>
     <string name="app_name">Skill Articles</string>
-    <string name="menu_search_title">Search</string>
-    <string name="loading_placeholder">Loading…</string>
-    <string name="article_search_placeholder">Search</string>
-    <string name="not_found_text">Not found</string>
-    <string name="dark_mode_label">Темный режим</string>
 </resources>

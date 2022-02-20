@@ -1,12 +1,15 @@
 package ru.skillbranch.skillarticles.viewmodels
 
 import android.os.Bundle
+import android.util.Log
 import androidx.annotation.UiThread
 import androidx.annotation.VisibleForTesting
+import androidx.arch.core.util.Function
 import androidx.core.os.bundleOf
 import androidx.lifecycle.*
 import androidx.savedstate.SavedStateRegistryOwner
 import java.io.Serializable
+
 
 abstract class BaseViewModel<T>(initState: T, private val savedStateHandle: SavedStateHandle) : ViewModel() where T : VMState {
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
@@ -24,6 +27,7 @@ abstract class BaseViewModel<T>(initState: T, private val savedStateHandle: Save
             else it as T
         }
 
+        Log.d("State", "handle restore state $restoredState ")
         value = restoredState ?: initState
     }
 
@@ -63,15 +67,11 @@ abstract class BaseViewModel<T>(initState: T, private val savedStateHandle: Save
         state.observe(owner, Observer { onChanged(it!!) })
     }
 
-    /***
-     * вспомогательная функция, позволяющая наблюдать за изменениями части стейта ViewModel
-     * выражение обрабатывающее изменение текущего стостояния
-     */
-    fun <D> observeSubState(owner: LifecycleOwner, transform:(T) ->  D, onChanged: (subState: D) -> Unit) {
+    fun <D>observeSubState(owner: LifecycleOwner, transform: (currentState : T) -> D, onChanged: (newState: D) -> Unit) {
         state
             .map(transform)
             .distinctUntilChanged()
-            .observe(owner, Observer { onChanged(it!!) })
+            .observe(owner, Observer { onChanged(it) })
     }
 
     /***
@@ -82,6 +82,18 @@ abstract class BaseViewModel<T>(initState: T, private val savedStateHandle: Save
     fun observeNotifications(owner: LifecycleOwner, onNotify: (notification: Notify) -> Unit) {
         notifications.observe(owner, EventObserver { onNotify(it) })
     }
+
+    fun saveState() {
+        Log.d("State", "saveState: $currentState")
+        savedStateHandle.set("state", currentState)
+    }
+
+//    fun restoreState() {
+//        val restoredState = savedStateHandle.get<T>("state")
+//        restoredState ?: return
+//        Log.d("State", "restoreState: ${restoredState}")
+//        state.value = restoredState
+//    }
 
     /***
      * функция принимает источник данных и лямбда выражение обрабатывающее поступающие данные источника
@@ -97,33 +109,17 @@ abstract class BaseViewModel<T>(initState: T, private val savedStateHandle: Save
         }
     }
 
-    fun saveState(){
-        savedStateHandle.set("state", currentState)
-    }
-
-//    fun restoreState(){
-//        val restoredState = savedStateHandle.get<T>("state")
-//        restoredState ?: return
-//        state.value = restoredState
-//    }
 }
 
-public interface VMState:Serializable {
-    fun toBundle() : Bundle
-    fun fromBundle(bundle:Bundle): VMState?
-}
+class ViewModelFactory(owner : SavedStateRegistryOwner, private val params: String) : AbstractSavedStateViewModelFactory(owner, bundleOf()) {
 
-class ViewModelFactory(owner: SavedStateRegistryOwner, val params: String) : AbstractSavedStateViewModelFactory(owner, bundleOf()) {
-    override fun <T : ViewModel?> create(
-        key: String,
-        modelClass: Class<T>,
-        handle: SavedStateHandle
-    ): T {
+    override fun <T : ViewModel?> create(key: String, modelClass: Class<T>, handle: SavedStateHandle): T {
         if (modelClass.isAssignableFrom(ArticleViewModel::class.java)) {
             return ArticleViewModel(params, handle) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
+
 }
 
 class Event<out E>(private val content: E) {
@@ -172,4 +168,12 @@ sealed class Notify(val message: String) {
         val errLabel: String?,
         val errHandler: (() -> Unit)?
     ) : Notify(msg)
+}
+
+interface VMState : Serializable {
+
+    fun toBundle() : Bundle
+
+    fun fromBundle(bundle: Bundle) : VMState?
+
 }

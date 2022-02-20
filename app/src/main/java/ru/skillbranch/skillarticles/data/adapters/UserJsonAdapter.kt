@@ -1,38 +1,25 @@
 package ru.skillbranch.skillarticles.data.adapters
 
 import ru.skillbranch.skillarticles.data.local.User
+import ru.skillbranch.skillarticles.extensions.asMap
 
-class UserJsonAdapter() : JsonAdapter<User> {
+class UserJsonAdapter : JsonAdapter<User>{
+
     override fun fromJson(json: String): User? {
-        val usr:User? = null
-        val user = json.split(',').map {
-            val keyValue = it.replace("[\'\"]".toRegex(), "").split(':')
-            val key = keyValue.first()
-            val value = keyValue.last()
-            key to value
-        }.toMap()
-        return if (user["id"] != null && user["name"] != null){
-            User(
-                id = user["id"]!!,
-                name = user["name"]!!,
-                avatar = if (user["avatar"] == "null") null else user["avatar"],
-                rating = user["rating"]?.toInt() ?: 0,
-                respect = user["respect"]?.toInt() ?: 0,
-                about = if (user["about"] == "null") null else user["about"]
-            )
-        }else{
-            usr
-        }
+        if (json.isEmpty()) return null
+
+        val resultData = json
+                .replace("{", "")
+                .replace("}", "")
+                .split(",")
+                .map { elem -> elem.split("=")[1] }
+
+
+        return User(resultData[0], resultData[1], resultData[2], Integer.valueOf(resultData[3]), Integer.valueOf(resultData[4]), resultData[5])
     }
 
     override fun toJson(obj: User?): String {
-        val json =
-            "\\((.*)\\)".toRegex().find(obj.toString())?.groupValues?.get(1)
-                ?.replace(", ", ",")
-                ?.replace("[^,=]+".toRegex()) {
-                    "\"" + it.value + "\""
-                }?.replace("=", ":")
-
-        return json ?: ""
+        return obj?.asMap().toString()
     }
+
 }

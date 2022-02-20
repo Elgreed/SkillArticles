@@ -1,14 +1,22 @@
 package ru.skillbranch.skillarticles.extensions
 
-fun String?.indexesOf(substr:String, ignoreCase:Boolean = true): List<Int>{
-    var result = mutableListOf<Int>()
-    if (substr.isNullOrBlank()) return result
+import android.util.Log
 
-    var ind = 0
-    while (ind != -1){
-        ind = this?.indexOf(substr, ind, ignoreCase)!!
-        if (ind != -1) result.add(ind++)
-        else break
+fun String?.indexesOf(substr : String, ignoreCase : Boolean = true) : List<Int> {
+    val result = mutableListOf<Int>()
+
+    var index = 0
+
+//    Log.d("Query", "indexesOf: substring ${substr} and this ${this}")
+
+    this?.let {
+        while (substr.isNotEmpty() && index < it.length && it.indexOf(substr, index, ignoreCase) != -1) {
+            val subIndex = it.indexOf(substr, index, ignoreCase)
+            result.add(subIndex)
+            index = subIndex.inc()
+        }
     }
+
+
     return result
 }

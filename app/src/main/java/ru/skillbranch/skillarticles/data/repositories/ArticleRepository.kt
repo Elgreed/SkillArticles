@@ -1,11 +1,10 @@
 package ru.skillbranch.skillarticles.data.repositories
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import ru.skillbranch.skillarticles.data.*
 
-interface  IArticleRepository{
+interface IArticleRepository {
     fun loadArticleContent(articleId: String): LiveData<List<MarkdownElement>?>
     fun getArticle(articleId: String): LiveData<ArticleData?>
     fun loadArticlePersonalInfo(articleId: String): LiveData<ArticlePersonalInfo?>
@@ -14,19 +13,16 @@ interface  IArticleRepository{
     fun updateArticlePersonalInfo(info: ArticlePersonalInfo)
 }
 
-
-object ArticleRepository : IArticleRepository {
-    private val local = LocalDataHolder
-    private val network = NetworkDataHolder
-    private val isSearchLiveData = MutableLiveData<Boolean>()
-    private val prefs:PrefManager = PrefManager()
+class ArticleRepository (
+    private val local : LocalDataHolder = LocalDataHolder,
+    private val network : NetworkDataHolder = NetworkDataHolder,
+    private val prefs : PrefManager = PrefManager()) : IArticleRepository {
 
     override fun loadArticleContent(articleId: String): LiveData<List<MarkdownElement>?> {
         return network.loadArticleContent(articleId)
-            .map { str ->
-                str?.let { MarkdownParser.parse(it) }
-            }//5s delay from network
+            .map { str -> str?.let { MarkdownParser.parse(it) }  } //5s delay from network
     }
+
     override fun getArticle(articleId: String): LiveData<ArticleData?> {
         return local.findArticle(articleId) //2s delay from db
     }
@@ -36,19 +32,14 @@ object ArticleRepository : IArticleRepository {
     }
 
     override fun getAppSettings(): LiveData<AppSettings> = prefs.settings //from preferences
+
     override fun updateSettings(appSettings: AppSettings) {
         prefs.isBigText = appSettings.isBigText
         prefs.isDarkMode = appSettings.isDarkMode
-
     }
 
     override fun updateArticlePersonalInfo(info: ArticlePersonalInfo) {
         local.updateArticlePersonalInfo(info)
     }
 
-    fun getSearchStatus() = isSearchLiveData
-
-    fun updateSearchStatus(status:Boolean){
-        isSearchLiveData.value = status
-    }
 }
