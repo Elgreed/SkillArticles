@@ -3,5 +3,4 @@
     <item android:state_checkable="true" android:color="?attr/colorAccent"/><!-- pressed -->
     <item android:state_checked="true" android:color="?attr/colorAccent"/>
     <item android:color="?attr/colorOnPrimary" />
-
 </selector>

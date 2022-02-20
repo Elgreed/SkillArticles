@@ -6,53 +6,51 @@ import android.util.Log
 import androidx.core.text.getSpans
 import ru.skillbranch.skillarticles.ui.custom.spans.SearchFocusSpan
 import ru.skillbranch.skillarticles.ui.custom.spans.SearchSpan
+import java.lang.Exception
 
 interface IMarkdownView {
-
-    var fontSize : Float
-    val spannableContent : Spannable
-
-    fun clearSearchResult() {
-        spannableContent.getSpans<SearchSpan>().forEach { spannableContent.removeSpan(it) }
-    }
+    var fontSize: Float
+    val spannableContent: Spannable
 
     fun renderSearchResult(
-            results : List<Pair<Int, Int>>,
-            offset : Int
+        result: List<Pair<Int, Int>>,
+        offset: Int
     ) {
         clearSearchResult()
-        val offsetResult = results.map { (start, end) -> start.minus(offset) to end.minus(offset) }
+        val offsetReSult = result.map {
+            (start, end) -> start.minus(offset) to end.minus(offset)
+        }
 
         try {
-
-            offsetResult.forEach {(start, end)  ->
+            offsetReSult.forEach { (start, end) ->
                 spannableContent.setSpan(
-                        SearchSpan(),
-                        start,
-                        end,
-                        SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+                    SearchSpan(),
+                    start,
+                    end,
+                    SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
-
-        }
-        } catch (e : Exception) {
+            }
+        } catch (e: Exception) {
             e.printStackTrace()
-            Log.e("IMarkdownView", "renderSearchResult: ${e.message}")
+            Log.e("IMarkdownView", "${e.message}")
         }
-
     }
 
     fun renderSearchPosition(
-            position : Pair<Int, Int>,
-            offset: Int
+        searchPosition: Pair<Int, Int>,
+        offset: Int
     ) {
         spannableContent.getSpans<SearchFocusSpan>().forEach { spannableContent.removeSpan(it) }
 
         spannableContent.setSpan(
-                SearchFocusSpan(),
-                position.first.minus(offset),
-                position.second.minus(offset),
-                SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+            SearchFocusSpan(),
+            searchPosition.first.minus(offset),
+            searchPosition.second.minus(offset),
+            SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
         )
     }
 
+    fun clearSearchResult() {
+        spannableContent.getSpans<SearchSpan>().forEach { spannableContent.removeSpan(it) }
+    }
 }

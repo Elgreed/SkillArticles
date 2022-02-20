@@ -8,38 +8,39 @@ import androidx.annotation.ColorInt
 import androidx.annotation.Px
 import ru.skillbranch.skillarticles.extensions.getLineBottomWithoutPadding
 
+
 class UnorderedListSpan(
-        @Px
-        private val gapWidth : Float,
-        @Px
-        private val bulletRadius : Float,
-        @ColorInt
-        private val bulletColor : Int
+    @Px
+    private val gapWidth: Float,
+    @Px
+    private val bulletRadius: Float,
+    @ColorInt
+    private val bulletColor: Int
 ) : LeadingMarginSpan {
 
-    override fun drawLeadingMargin(canvas: Canvas, paint: Paint,
-                                   currentMarginLocation: Int, paragraphDirection: Int, lineTop: Int,
-                                   lineBaseLine: Int, lineBottom : Int, text: CharSequence?,
-                                   lineStart : Int, lineEnd: Int, isFirstLine: Boolean, layout: Layout) {
+    override fun getLeadingMargin(first: Boolean): Int {
+        return (4 * bulletRadius + gapWidth).toInt()
+    }
 
+    override fun drawLeadingMargin(
+        canvas: Canvas, paint: Paint, currentMarginLocation: Int, paragraphDirection: Int,
+        lineTop: Int, lineBaseline: Int, lineBottom: Int, text: CharSequence?, lineStart: Int,
+        lineEnd: Int, isFirstLine: Boolean, layout: Layout
+    ) {
+        //only for first line draw bullet
         if (isFirstLine) {
             paint.withCustomColor {
                 canvas.drawCircle(
-                        gapWidth + currentMarginLocation + bulletRadius,
-                        (lineTop + layout.getLineBottomWithoutPadding(layout.getLineForOffset(lineStart)))/2f,
-                        bulletRadius,
-                        paint
+                    gapWidth + currentMarginLocation + bulletRadius,
+                    (lineTop + layout.getLineBottomWithoutPadding(layout.getLineForOffset(lineStart))) / 2f,
+                    bulletRadius,
+                    paint
                 )
             }
         }
-
     }
 
-    override fun getLeadingMargin(first: Boolean): Int {
-        return (4*bulletRadius + gapWidth).toInt()
-    }
-
-    private inline fun Paint.withCustomColor(block : () -> Unit) {
+    private inline fun Paint.withCustomColor(block: () -> Unit) {
         val oldColor = color
         val oldStyle = style
 
@@ -51,5 +52,4 @@ class UnorderedListSpan(
         color = oldColor
         style = oldStyle
     }
-
 }

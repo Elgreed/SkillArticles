@@ -13,14 +13,15 @@ interface IArticleRepository {
     fun updateArticlePersonalInfo(info: ArticlePersonalInfo)
 }
 
-class ArticleRepository (
-    private val local : LocalDataHolder = LocalDataHolder,
-    private val network : NetworkDataHolder = NetworkDataHolder,
-    private val prefs : PrefManager = PrefManager()) : IArticleRepository {
+class ArticleRepository(
+    private val local: LocalDataHolder = LocalDataHolder,
+    private val network: NetworkDataHolder = NetworkDataHolder,
+    private val prefs: PrefManager = PrefManager()
+) : IArticleRepository {
 
     override fun loadArticleContent(articleId: String): LiveData<List<MarkdownElement>?> {
         return network.loadArticleContent(articleId)
-            .map { str -> str?.let { MarkdownParser.parse(it) }  } //5s delay from network
+            .map { str -> str?.let { MarkdownParser.parse(it) } }
     }
 
     override fun getArticle(articleId: String): LiveData<ArticleData?> {
@@ -41,5 +42,4 @@ class ArticleRepository (
     override fun updateArticlePersonalInfo(info: ArticlePersonalInfo) {
         local.updateArticlePersonalInfo(info)
     }
-
 }
