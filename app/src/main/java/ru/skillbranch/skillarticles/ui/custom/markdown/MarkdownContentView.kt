@@ -175,7 +175,7 @@ class MarkdownContentView @JvmOverloads constructor(
 
 }
 
-private fun  List<Pair<Int, Int>>.groupByBounds(bounds: List<Pair<Int, Int>>): List<List<Pair<Int, Int>>> {
+fun  List<Pair<Int, Int>>.groupByBounds(bounds: List<Pair<Int, Int>>): List<List<Pair<Int, Int>>> {
 
     val result = mutableListOf<List<Pair<Int, Int>>>()
 

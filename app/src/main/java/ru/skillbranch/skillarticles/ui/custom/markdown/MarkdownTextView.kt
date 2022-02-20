@@ -1,15 +1,11 @@
 package ru.skillbranch.skillarticles.ui.custom.markdown
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Rect
 import android.text.Spannable
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
-import android.util.AttributeSet
-import android.widget.TextView
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.graphics.withTranslation
@@ -38,7 +34,7 @@ class MarkdownTextView @JvmOverloads constructor(
     private val searchPadding = context.dpToIntPx(56)
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    private val searchBgHelper = SerachBgHelper(context) { top, bottom ->
+    var searchBgHelper = SearchBgHelper(context) { top, bottom ->
         focusRect.set(0, top - searchPadding, width, bottom + searchPadding)
         requestRectangleOnScreen(focusRect, false)
     }
