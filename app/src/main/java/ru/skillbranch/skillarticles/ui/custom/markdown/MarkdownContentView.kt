@@ -175,18 +175,12 @@ class MarkdownContentView @JvmOverloads constructor(
 
 }
 
-fun  List<Pair<Int, Int>>.groupByBounds(bounds: List<Pair<Int, Int>>): List<List<Pair<Int, Int>>> {
-
-    val result = mutableListOf<List<Pair<Int, Int>>>()
-
-    bounds.forEach { (startBound, endBound) ->
-        val boundRange = startBound..endBound
-        val searchBounds = filter { (startSearching, endSearching) ->
-            startSearching in boundRange && endSearching in boundRange
-        }
-        result.add(searchBounds)
+fun List<Pair<Int, Int>>.groupByBounds(bounds: List<Pair<Int, Int>>): List<MutableList<Pair<Int, Int>>> {
+    return bounds.fold(mutableListOf<MutableList<Pair<Int, Int>>>()){acc, pair ->
+        val res = this.filter {
+            it.first >= pair.first && it.second <= pair.second
+        }.toMutableList()
+        acc.add(res)
+        acc
     }
-
-    return result
-
 }
