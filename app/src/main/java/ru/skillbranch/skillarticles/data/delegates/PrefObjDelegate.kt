@@ -1,7 +1,7 @@
 package ru.skillbranch.skillarticles.data.delegates
 
-import androidx.datastore.preferences.core.*
-import kotlinx.coroutines.Dispatchers
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -11,38 +11,45 @@ import ru.skillbranch.skillarticles.data.adapters.JsonAdapter
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-class PrefObjDelegate<T> (private val adapter: JsonAdapter<T>, private val customKey: String? = null) {
+/**
+ * Делегат, возвращающий десериализованный результат из DataStore типа T
+ */
+class PrefObjDelegate<T>(private val adapter: JsonAdapter<T>,
+                         private val customKey: String? = null) {
     operator fun provideDelegate(
         thisRef: PrefManager,
         prop: KProperty<*>
     ): ReadWriteProperty<PrefManager, T?> {
-
-        val key = stringPreferencesKey(customKey ?: prop.name)
         return object : ReadWriteProperty<PrefManager, T?> {
-            private var _storedValue: T? = null
+            var _storedValue: T? = null
+            var key = stringPreferencesKey(customKey ?: prop.name)
 
             override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T?) {
                 _storedValue = value
+                //Сериализацию лучше проводить асинхронно.
+                @Suppress("UNCHECKED_CAST")
                 thisRef.scope.launch {
-                    thisRef.dataStore.edit { pref ->
-                        pref[key] = adapter.toJson(value)
+                    thisRef.dataStore.edit { prefs ->
+                        prefs[key] = adapter.toJson(value)
                     }
                 }
             }
 
             override fun getValue(thisRef: PrefManager, property: KProperty<*>): T? {
                 if (_storedValue == null) {
-                    //async flow
-                    val flowValue = thisRef.dataStore.data
-                        .map { prefs ->
-                            adapter.fromJson(prefs[key] ?: "")
-                        }
-                    //sync read
-                    _storedValue = runBlocking(Dispatchers.IO) { flowValue.first() }
+                    // async flow
+                    //Делать flowValue var нет нужды, также парсинг можно переместить в map,
+                    // так как вся цепочка вызовов в flow сработает только тогда, когда
+                    // мы будем читать из него значения.
+                    val flowValue = thisRef.dataStore.data.map {
+                        pref -> adapter.fromJson(pref[key] ?: "")
+                    }
+                    // sync read
+                    _storedValue = runBlocking{ flowValue.first() }
                 }
-
                 return _storedValue
             }
+
         }
     }
 }

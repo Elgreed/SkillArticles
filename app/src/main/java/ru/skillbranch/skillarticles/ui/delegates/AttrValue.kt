@@ -7,14 +7,17 @@ import androidx.annotation.AttrRes
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-class AttrValue(@AttrRes private val res: Int): ReadOnlyProperty<Context, Int> {
-    private var _value: Int? = null
+/**
+ * Делегат позволяющий вернуть значение указанного атрибута темы
+ */
+class AttrValue(@AttrRes private val res: Int) : ReadOnlyProperty<Context, Int> {
+    private var value: Int? = null
     override fun getValue(thisRef: Context, property: KProperty<*>): Int {
-        if (_value == null){
+        if (value == null) {
             val tv = TypedValue()
-            if (thisRef.theme.resolveAttribute(res, tv, true)) _value = tv.data
+            if (thisRef.theme.resolveAttribute(res, tv, true)) value = tv.data
             else throw Resources.NotFoundException("Resource with id $res not found")
         }
-        return  _value!!
+        return value!!
     }
 }

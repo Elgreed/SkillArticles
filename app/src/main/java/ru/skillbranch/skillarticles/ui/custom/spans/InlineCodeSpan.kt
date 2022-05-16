@@ -17,7 +17,7 @@ class InlineCodeSpan(
     @Px
     private val cornerRadius: Float,
     @Px
-    private val padding: Float
+    val padding: Float
 ) : ReplacementSpan() {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     var rect: RectF = RectF()
@@ -49,8 +49,9 @@ class InlineCodeSpan(
         bottom: Int,
         paint: Paint
     ) {
+
         paint.forBackground {
-            rect.set(x, top.toFloat(), x + measureWidth, y + paint.descent())
+            rect.set(x, top.toFloat(), x + measureWidth, bottom.toFloat())
             canvas.drawRoundRect(rect, cornerRadius, cornerRadius, paint)
         }
 
@@ -61,9 +62,9 @@ class InlineCodeSpan(
 
     private inline fun Paint.forText(block: () -> Unit) {
         val oldSize = textSize
-        val oldColor = color
         val oldStyle = typeface?.style ?: 0
         val oldFont = typeface
+        val oldColor = color
 
         color = textColor
         typeface = Typeface.create(Typeface.MONOSPACE, oldStyle)
@@ -88,4 +89,5 @@ class InlineCodeSpan(
         color = oldColor
         style = oldStyle
     }
+
 }

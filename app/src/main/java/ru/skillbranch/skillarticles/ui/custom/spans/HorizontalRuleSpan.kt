@@ -6,7 +6,8 @@ import android.text.style.ReplacementSpan
 import androidx.annotation.ColorInt
 import androidx.annotation.Px
 
-
+// ReplacementSpan - абстрактный класс, который используется для замещения какой-то части текста
+// и там можно отрисовать что угодно, в т.ч. изображение
 class HorizontalRuleSpan(
     @Px
     val ruleWidth: Float,
@@ -51,9 +52,9 @@ class HorizontalRuleSpan(
         val oldStyle = style
         val oldWidth = strokeWidth
 
+        strokeWidth = ruleWidth
         color = ruleColor
         style = Paint.Style.STROKE
-        strokeWidth = ruleWidth
 
         block()
 
@@ -61,4 +62,5 @@ class HorizontalRuleSpan(
         style = oldStyle
         strokeWidth = oldWidth
     }
+
 }

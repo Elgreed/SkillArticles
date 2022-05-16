@@ -6,23 +6,17 @@ import android.util.Log
 import androidx.core.text.getSpans
 import ru.skillbranch.skillarticles.ui.custom.spans.SearchFocusSpan
 import ru.skillbranch.skillarticles.ui.custom.spans.SearchSpan
-import java.lang.Exception
 
 interface IMarkdownView {
     var fontSize: Float
     val spannableContent: Spannable
 
-    fun renderSearchResult(
-        result: List<Pair<Int, Int>>,
-        offset: Int
-    ) {
+    fun renderSearchResult(results: List<Pair<Int, Int>>, offset: Int) {
         clearSearchResult()
-        val offsetReSult = result.map {
-            (start, end) -> start.minus(offset) to end.minus(offset)
-        }
+        val offsetResult = results.map { (start, end) -> start.minus(offset) to end.minus(offset) }
 
         try {
-            offsetReSult.forEach { (start, end) ->
+            offsetResult.forEach { (start, end) ->
                 spannableContent.setSpan(
                     SearchSpan(),
                     start,
@@ -36,10 +30,7 @@ interface IMarkdownView {
         }
     }
 
-    fun renderSearchPosition(
-        searchPosition: Pair<Int, Int>,
-        offset: Int
-    ) {
+    fun renderSearchPosition(searchPosition: Pair<Int, Int>, offset: Int) {
         spannableContent.getSpans<SearchFocusSpan>().forEach { spannableContent.removeSpan(it) }
 
         spannableContent.setSpan(

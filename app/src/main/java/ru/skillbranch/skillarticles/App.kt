@@ -5,12 +5,12 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import ru.skillbranch.skillarticles.data.PrefManager
 
-class App: Application() {
+class App : Application() {
 
     companion object {
         private var instance: App? = null
 
-        fun applicationContext(): Context{
+        fun applicationContext(): Context {
             return instance!!.applicationContext
         }
     }

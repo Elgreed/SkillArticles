@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.ui.custom.markdown
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
@@ -13,7 +14,6 @@ import androidx.core.text.inSpans
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.repositories.Element
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
-import ru.skillbranch.skillarticles.data.repositories.MarkdownParser
 import ru.skillbranch.skillarticles.extensions.attrValue
 import ru.skillbranch.skillarticles.extensions.dpToPx
 import ru.skillbranch.skillarticles.ui.custom.spans.*
@@ -22,12 +22,10 @@ class MarkdownBuilder(context: Context) {
     private val colorSecondary = context.attrValue(R.attr.colorSecondary)
     private val colorPrimary = context.attrValue(R.attr.colorPrimary)
     private val colorOnSurface = context.attrValue(R.attr.colorOnSurface)
-
-    private val opacityColorSurface = context.getColor(R.color.color_surface)
+    private val opacityColorSurface = context.getColor(R.color.opacity_color_surface)
     private val colorDivider = context.getColor(R.color.color_divider)
     private val gap: Float = context.dpToPx(8)
     private val bulletRadius = context.dpToPx(4)
-    private val quoteWidth = context.dpToPx(4)
     private val strikeWidth = context.dpToPx(4)
     private val headerMarginTop = context.dpToPx(12)
     private val headerMarginBottom = context.dpToPx(8)
@@ -37,7 +35,7 @@ class MarkdownBuilder(context: Context) {
 
     fun markdownToSpan(textContent: MarkdownElement.Text): SpannedString {
         return buildSpannedString {
-            textContent.elements.forEach { buildElement(it, this) }
+            textContent.elements.forEach { buildElement(element = it, this) }
         }
     }
 
@@ -45,7 +43,7 @@ class MarkdownBuilder(context: Context) {
         return builder.apply {
             when (element) {
                 is Element.Text -> append(element.text)
-                is Element.OrderedListItem -> {
+                is Element.UnorderedListItem -> {
                     inSpans(UnorderedListSpan(gap, bulletRadius, colorSecondary)) {
                         for (child in element.elements) {
                             buildElement(child, builder)
@@ -54,7 +52,7 @@ class MarkdownBuilder(context: Context) {
                 }
                 is Element.Quote -> {
                     inSpans(
-                        BlockquotesSpan(gap, quoteWidth, colorSecondary),
+                        BlockquotesSpan(gap, strikeWidth, colorSecondary),
                         StyleSpan(Typeface.ITALIC)
                     ) {
                         for (child in element.elements) {
@@ -115,12 +113,7 @@ class MarkdownBuilder(context: Context) {
                 }
                 is Element.Link -> {
                     inSpans(
-                        IconLinkSpan(
-                            linkIcon,
-                            gap,
-                            colorPrimary,
-                            strikeWidth
-                        ),
+                        IconLinkSpan(linkIcon, gap, colorPrimary, strikeWidth),
                         URLSpan(element.link)
                     ) {
                         append(element.text)
